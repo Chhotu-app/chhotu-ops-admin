@@ -5,57 +5,66 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Chhotu Ops Admin</title>
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#059669">
+  <meta name="theme-color" content="#0f172a">
   <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    html, body {
+      min-height: 100%;
+      background-color: #0f172a;
+      -webkit-tap-highlight-color: transparent;
+    }
+  </style>
 </head>
-<body class="bg-slate-900 text-slate-100 flex justify-center min-h-screen">
-  <div class="w-full max-w-md bg-slate-900 min-h-screen flex flex-col pb-20 border-x border-slate-800 shadow-2xl relative">
+<body class="bg-slate-900 text-slate-100 flex justify-center">
+  <div class="w-full max-w-md bg-slate-900 min-h-screen flex flex-col border-x border-slate-800 shadow-2xl relative pb-28">
     
     <!-- Top Header Bar -->
-    <header class="bg-slate-800/95 backdrop-blur px-4 py-3 border-b border-slate-700 flex items-center justify-between sticky top-0 z-30">
-      <div class="flex items-center gap-2">
+    <header class="bg-slate-800/95 backdrop-blur px-4 py-3 border-b border-slate-700 flex items-center justify-between sticky top-0 z-40">
+      <div class="flex items-center gap-2.5">
         <div class="w-9 h-9 rounded-xl bg-emerald-600 flex items-center justify-center font-black text-white shadow-md">
           <i class="fa-solid fa-shield-halved text-sm"></i>
         </div>
         <div>
           <div class="flex items-center gap-1.5">
             <span class="font-extrabold text-white text-sm tracking-wide">CHHOTU OPS ADMIN</span>
-            <span class="bg-emerald-500/20 text-emerald-400 text-[10px] font-bold px-1.5 py-0.5 rounded border border-emerald-500/30">LIVE</span>
+            <span class="bg-emerald-500/20 text-emerald-400 text-[10px] font-bold px-1.5 py-0.5 rounded border border-emerald-500/30" id="liveBadge">LIVE</span>
           </div>
           <p class="text-[11px] text-slate-400 font-medium">South Delhi Central Depot • Hub #04</p>
         </div>
       </div>
-      <button class="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-emerald-400 border border-slate-600 active:scale-95 transition" onclick="playChime()">
-        <i class="fa-solid fa-bell text-xs"></i>
+      <button onclick="triggerNotificationChime()" class="w-9 h-9 rounded-full bg-slate-700 flex items-center justify-center text-emerald-400 border border-slate-600 active:scale-90 transition shadow">
+        <i class="fa-solid fa-bell text-sm"></i>
       </button>
     </header>
 
     <!-- Notification Alert Banner -->
-    <div id="alertBanner" class="hidden bg-emerald-950 border-b border-emerald-500/40 px-4 py-2.5 flex items-center justify-between animate-pulse">
+    <div id="alertBanner" class="hidden bg-emerald-950/90 border-b border-emerald-500/50 px-4 py-2.5 flex items-center justify-between transition-all">
       <div class="flex items-center gap-2 text-xs">
         <i class="fa-solid fa-circle-check text-emerald-400"></i>
-        <span class="text-emerald-200 font-bold">New Order Chime Active</span>
+        <span id="alertBannerText" class="text-emerald-200 font-bold">New Morning Order Received!</span>
       </div>
-      <span class="text-[10px] text-emerald-400 font-semibold">Depot Ready</span>
+      <button onclick="dismissAlert()" class="text-xs text-slate-400 hover:text-white px-2 py-0.5">✕</button>
     </div>
 
-    <!-- Main Content -->
-    <main class="p-4 space-y-4 flex-1">
-      <!-- 11 PM Cutoff Matrix -->
+    <!-- Scrollable Main Container -->
+    <main class="p-4 space-y-4">
+      
+      <!-- 11 PM Cutoff Matrix Card -->
       <div class="bg-gradient-to-br from-slate-800 to-slate-800/90 rounded-2xl p-4 border border-slate-700 shadow-lg">
         <div class="flex items-center justify-between mb-2">
           <div class="flex items-center gap-2 text-emerald-400 font-bold text-xs">
             <i class="fa-solid fa-lock"></i>
             <span>11:00 PM CUTOFF MATRIX</span>
           </div>
-          <span class="bg-emerald-500/20 text-emerald-300 text-[10px] font-extrabold px-2 py-0.5 rounded-full border border-emerald-400/30">LOCKED & STAGED</span>
+          <span class="bg-emerald-500/20 text-emerald-300 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full border border-emerald-400/30">LOCKED & STAGED</span>
         </div>
         <div class="grid grid-cols-2 gap-3 mt-3 pt-3 border-t border-slate-700/80">
           <div>
             <p class="text-xs text-slate-400">Morning Batches</p>
-            <p class="text-2xl font-black text-white">84 Orders</p>
+            <p id="totalOrdersCount" class="text-2xl font-black text-white">84 Orders</p>
             <p class="text-[11px] text-emerald-400 font-medium">GMV: ₹42,650</p>
           </div>
           <div class="text-right">
@@ -64,67 +73,283 @@
             <p class="text-[11px] text-slate-400">6:00 AM Dawn Slot</p>
           </div>
         </div>
+        <div class="mt-3 pt-2">
+          <button id="authFleetBtn" onclick="authorizeFleetDeparture()" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white rounded-xl text-xs font-black shadow flex items-center justify-center gap-2 transition">
+            <i class="fa-solid fa-truck-fast"></i>
+            <span>Authorize 6:00 AM Dispatch</span>
+          </button>
+        </div>
       </div>
 
-      <!-- Live Incoming Orders -->
-      <div class="space-y-3">
+      <!-- Quick Action Buttons -->
+      <div class="flex items-center gap-2 overflow-x-auto py-1">
+        <button class="bg-emerald-600 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow shrink-0 active:scale-95" onclick="filterOrders('all')">All (84)</button>
+        <button class="bg-slate-800 text-slate-300 border border-slate-700 text-xs font-bold px-3 py-1.5 rounded-full shrink-0 active:scale-95" onclick="filterOrders('pending')">Pending Crate (14)</button>
+        <button class="bg-blue-600 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow shrink-0 active:scale-95" onclick="addNewMockOrder()">+ Add Test Order</button>
+      </div>
+
+      <!-- Section Title -->
+      <div class="flex items-center justify-between pt-1">
         <h2 class="text-xs font-extrabold text-slate-300 uppercase tracking-wider">Live Customer Orders</h2>
+        <span class="text-[11px] text-emerald-400 font-semibold cursor-pointer" onclick="refreshList()">Auto-Sync: ON</span>
+      </div>
+
+      <!-- Orders Feed -->
+      <div id="ordersContainer" class="space-y-3">
         
-        <div class="bg-slate-800 rounded-2xl p-4 border border-slate-700 shadow space-y-3">
+        <!-- Order Card 1 -->
+        <div class="bg-slate-800 rounded-2xl p-4 border border-slate-700 shadow-md space-y-3">
           <div class="flex items-start justify-between">
             <div>
               <div class="flex items-center gap-2">
                 <span class="font-extrabold text-white text-sm">CH-2026-0881</span>
-                <span class="bg-blue-500/20 text-blue-300 text-[10px] font-bold px-2 py-0.5 rounded">UPI Paid (₹430)</span>
+                <span class="bg-blue-500/20 text-blue-300 text-[10px] font-bold px-2 py-0.5 rounded border border-blue-400/30">UPI Paid (₹430)</span>
               </div>
               <p class="text-xs text-slate-300 font-semibold mt-1">Ananya Sharma • +91 98101 23456</p>
             </div>
             <span class="text-[10px] text-slate-400">2 min ago</span>
           </div>
           <div class="bg-slate-900/80 rounded-xl p-3 border border-slate-700/60 text-xs">
-            <p class="text-emerald-400 font-semibold">Delivery Address:</p>
-            <p class="text-slate-200 mt-0.5">Flat 402, Pocket 8, Sector C, Vasant Kunj (110070)</p>
+            <p class="text-emerald-400 font-semibold flex items-center gap-1">
+              <i class="fa-solid fa-location-dot"></i> Delivery Address:
+            </p>
+            <p class="text-slate-200 mt-1 leading-relaxed">Flat 402, Pocket 8, Sector C, Vasant Kunj, New Delhi (110070)</p>
           </div>
-          <div class="text-xs space-y-1 text-slate-300 border-t border-slate-700/80 pt-2">
-            <div class="flex justify-between">
+          <div class="text-xs space-y-1.5 text-slate-300 border-t border-slate-700/80 pt-2.5">
+            <div class="flex justify-between items-center">
               <span>🥭 Alphonso Mangoes (1kg)</span>
               <span class="font-bold text-white">₹350</span>
             </div>
-            <div class="flex justify-between">
-              <span>🥬 Fresh Spinach (250g x 2)</span>
+            <div class="flex justify-between items-center">
+              <span>🥬 Fresh Spinach / Palak (250g x 2)</span>
               <span class="font-bold text-white">₹80</span>
             </div>
           </div>
-          <div class="flex items-center justify-between pt-1 text-xs">
-            <span class="text-emerald-400 font-medium">Assigned: Rahul Sharma (#104)</span>
-            <span class="bg-emerald-900/60 text-emerald-300 px-2 py-0.5 rounded text-[10px] font-bold">Crate C-04</span>
+          <div class="flex items-center justify-between pt-2 border-t border-slate-700/50 text-xs">
+            <div class="flex items-center gap-1 text-emerald-400 font-medium">
+              <i class="fa-solid fa-user-check"></i>
+              <span>Assigned: Rahul Sharma (#104)</span>
+            </div>
+            <span class="bg-emerald-900/60 text-emerald-300 px-2 py-0.5 rounded text-[10px] font-bold border border-emerald-700/50">Crate C-04</span>
+          </div>
+          <div class="grid grid-cols-2 gap-2 pt-1">
+            <button onclick="callCustomer('+919810123456')" class="py-2 bg-slate-700 active:bg-slate-600 rounded-xl text-xs font-bold text-slate-200 flex items-center justify-center gap-1.5 transition">
+              <i class="fa-solid fa-phone text-emerald-400"></i> Call Customer
+            </button>
+            <button onclick="markOrderPacked(this)" class="py-2 bg-emerald-600/30 border border-emerald-500/50 active:bg-emerald-600 text-emerald-300 hover:text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition">
+              <i class="fa-solid fa-check"></i> Mark Packed
+            </button>
           </div>
         </div>
+
+        <!-- Order Card 2: Hourly Helper Booking -->
+        <div class="bg-slate-800 rounded-2xl p-4 border border-slate-700 shadow-md space-y-3">
+          <div class="flex items-start justify-between">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="font-extrabold text-white text-sm">CH-2026-0882</span>
+                <span class="bg-amber-500/20 text-amber-300 text-[10px] font-bold px-2 py-0.5 rounded border border-amber-400/30">Hourly Helper</span>
+              </div>
+              <p class="text-xs text-slate-300 font-semibold mt-1">Vikram Malhotra • +91 98991 88234</p>
+            </div>
+            <span class="text-[10px] text-slate-400">12 min ago</span>
+          </div>
+          <div class="bg-slate-900/80 rounded-xl p-3 border border-slate-700/60 text-xs">
+            <p class="text-amber-400 font-semibold flex items-center gap-1">
+              <i class="fa-solid fa-screwdriver-wrench"></i> Service Details:
+            </p>
+            <p class="text-slate-200 mt-1">Balcony Mali (Gardener) • 2 Hours Booking (₹198)</p>
+            <p class="text-slate-400 mt-0.5">Villa 12, Sector B, Pocket 1, Vasant Kunj</p>
+          </div>
+          <div class="flex items-center justify-between pt-2 border-t border-slate-700/50 text-xs">
+            <span class="text-amber-400 font-medium">Slot: 7:00 AM – 9:00 AM</span>
+            <span class="bg-blue-900/50 text-blue-300 px-2 py-0.5 rounded text-[10px] font-bold">Helper #112 (Suresh)</span>
+          </div>
+          <div class="grid grid-cols-2 gap-2 pt-1">
+            <button onclick="callCustomer('+919899188234')" class="py-2 bg-slate-700 active:bg-slate-600 rounded-xl text-xs font-bold text-slate-200 flex items-center justify-center gap-1.5 transition">
+              <i class="fa-solid fa-phone text-emerald-400"></i> Call Customer
+            </button>
+            <button onclick="alert('Timer started: 2 Hours Balcony Mali running.')" class="py-2 bg-amber-600/30 border border-amber-500/50 active:bg-amber-600 text-amber-300 hover:text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition">
+              <i class="fa-solid fa-stopwatch"></i> Start Timer
+            </button>
+          </div>
+        </div>
+
+        <!-- Order Card 3 -->
+        <div class="bg-slate-800 rounded-2xl p-4 border border-slate-700 shadow-md space-y-3">
+          <div class="flex items-start justify-between">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="font-extrabold text-white text-sm">CH-2026-0883</span>
+                <span class="bg-blue-500/20 text-blue-300 text-[10px] font-bold px-2 py-0.5 rounded border border-blue-400/30">COD (₹690)</span>
+              </div>
+              <p class="text-xs text-slate-300 font-semibold mt-1">Pooja Verma • +91 97112 44321</p>
+            </div>
+            <span class="text-[10px] text-slate-400">25 min ago</span>
+          </div>
+          <div class="bg-slate-900/80 rounded-xl p-3 border border-slate-700/60 text-xs">
+            <p class="text-emerald-400 font-semibold flex items-center gap-1">
+              <i class="fa-solid fa-location-dot"></i> Delivery Address:
+            </p>
+            <p class="text-slate-200 mt-1">A-84, Sector C, Vasant Kunj (110070)</p>
+          </div>
+          <div class="text-xs space-y-1 text-slate-300 border-t border-slate-700/80 pt-2">
+            <div class="flex justify-between">
+              <span>🪔 Pure Cow Ghee & Puja Pack</span>
+              <span class="font-bold text-white">₹450</span>
+            </div>
+            <div class="flex justify-between">
+              <span>🪴 Tulsi Nursery Plant</span>
+              <span class="font-bold text-white">₹240</span>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-2 pt-1">
+            <button onclick="callCustomer('+919711244321')" class="py-2 bg-slate-700 active:bg-slate-600 rounded-xl text-xs font-bold text-slate-200 flex items-center justify-center gap-1.5 transition">
+              <i class="fa-solid fa-phone text-emerald-400"></i> Call Customer
+            </button>
+            <button onclick="markOrderPacked(this)" class="py-2 bg-emerald-600/30 border border-emerald-500/50 active:bg-emerald-600 text-emerald-300 hover:text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition">
+              <i class="fa-solid fa-check"></i> Mark Packed
+            </button>
+          </div>
+        </div>
+
       </div>
     </main>
 
-    <!-- Bottom Navigation Bar -->
-    <nav class="fixed bottom-0 max-w-md w-full bg-slate-800/95 backdrop-blur border-t border-slate-700 py-2.5 px-4 flex justify-around z-30">
-      <button class="flex flex-col items-center gap-1 text-emerald-400">
-        <i class="fa-solid fa-boxes-stacked text-base"></i>
+    <!-- Bottom Navigation Bar with Interactive Tabs -->
+    <nav class="fixed bottom-0 max-w-md w-full bg-slate-800/95 backdrop-blur border-t border-slate-700 py-2.5 px-4 flex justify-around z-40 shadow-2xl">
+      <button id="tab-orders" onclick="switchTab('orders')" class="flex flex-col items-center gap-1 text-emerald-400 active:scale-95 transition">
+        <i class="fa-solid fa-boxes-stacked text-lg"></i>
         <span class="text-[10px] font-bold">Orders</span>
       </button>
-      <button class="flex flex-col items-center gap-1 text-slate-400">
-        <i class="fa-solid fa-users text-base"></i>
+      <button id="tab-helpers" onclick="switchTab('helpers')" class="flex flex-col items-center gap-1 text-slate-400 active:scale-95 transition">
+        <i class="fa-solid fa-users text-lg"></i>
         <span class="text-[10px] font-bold">Helpers</span>
       </button>
-      <button class="flex flex-col items-center gap-1 text-slate-400">
-        <i class="fa-solid fa-carrot text-base"></i>
+      <button id="tab-mandi" onclick="switchTab('mandi')" class="flex flex-col items-center gap-1 text-slate-400 active:scale-95 transition">
+        <i class="fa-solid fa-carrot text-lg"></i>
         <span class="text-[10px] font-bold">Mandi</span>
       </button>
+      <button id="tab-payouts" onclick="switchTab('payouts')" class="flex flex-col items-center gap-1 text-slate-400 active:scale-95 transition">
+        <i class="fa-solid fa-wallet text-lg"></i>
+        <span class="text-[10px] font-bold">Payouts</span>
+      </button>
     </nav>
+
   </div>
 
+  <!-- Interactive JavaScript -->
   <script>
-    function playChime() {
-      const banner = dcument.getElementById('alertBanner');
-      banner.classList.toggle('hidden');
-      if (navigator.vibrate) { navigator.vibrate([200, 100, 200]); }
+    let currentOrders = 84;
+
+    function triggerNotificationChime() {
+      const banner = document.getElementById('alertBanner');
+      banner.classList.remove('hidden');
+      if (navigator.vibrate) {
+        navigator.vibrate([200, 100, 200]);
+      }
+      playAudioAlert();
+    }
+
+    function dismissAlert() {
+      document.getElementById('alertBanner').classList.add('hidden');
+    }
+
+    function playAudioAlert() {
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.frequency.setValueAtTime(587.33, ctx.currentTime);
+        gain.gain.setValueAtTime(0.2, ctx.currentTime);
+        osc.start();
+        osc.frequency.setValueAtTime(880, ctx.currentTime + 0.15);
+        gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.4);
+        osc.stop(ctx.currentTime + 0.45);
+      } catch (e) {
+        console.log('Audio alert ready');
+      }
+    }
+
+    function authorizeFleetDeparture() {
+      const btn = document.getElementById('authFleetBtn');
+      if (confirm('Authorize 6:00 AM Dawn Departure for all 18 crates?')) {
+        btn.innerHTML = '<i class="fa-solid fa-circle-check"></i> 6:00 AM Fleet Dispatched';
+        btn.className = 'w-full py-2.5 bg-slate-700 text-slate-300 rounded-xl text-xs font-black shadow flex items-center justify-center gap-2 cursor-default';
+        triggerNotificationChime();
+        document.getElementById('alertBannerText').innerText = 'Dawn Fleet Departure Authorized!';
+      }
+    }
+
+    function callCustomer(phone) {
+      window.location.href = 'tel:' + phone;
+    }
+
+    function markOrderPacked(btn) {
+      btn.innerHTML = '<i class="fa-solid fa-check-double"></i> Sealed & Staged';
+      btn.className = 'py-2 bg-emerald-600 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5';
+    }
+
+    function addNewMockOrder() {
+      currentOrders++;
+      document.getElementById('totalOrdersCount').innerText = currentOrders + ' Orders';
+      const container = document.getElementById('ordersContainer');
+      const newCard = document.createElement('div');
+      newCard.className = 'bg-slate-800 rounded-2xl p-4 border border-emerald-500/60 shadow-lg space-y-3';
+      newCard.innerHTML = `
+        <div class="flex items-start justify-between">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="font-extrabold text-white text-sm">CH-2026-08${currentOrders}</span>
+              <span class="bg-emerald-500/20 text-emerald-300 text-[10px] font-bold px-2 py-0.5 rounded border border-emerald-400/30">Just Now</span>
+            </div>
+            <p class="text-xs text-slate-300 font-semibold mt-1">Rajesh Mehra • +91 98110 54321</p>
+          </div>
+          <span class="text-[10px] text-emerald-400 font-bold">Just Now</span>
+        </div>
+        <div class="bg-slate-900/80 rounded-xl p-3 border border-slate-700/60 text-xs">
+          <p class="text-emerald-400 font-semibold">Delivery Address:</p>
+          <p class="text-slate-200 mt-1">Tower 4, Flat 1102, Sector C, Vasant Kunj</p>
+        </div>
+        <div class="text-xs space-y-1 text-slate-300 border-t border-slate-700/80 pt-2">
+          <div class="flex justify-between">
+            <span>🥭 Alphonso Mangoes (2kg)</span>
+            <span class="font-bold text-white">₹700</span>
+          </div>
+        </div>
+      `;
+      container.insertBefore(newCard, container.firstChild);
+      triggerNotificationChime();
+    }
+
+    function switchTab(tab) {
+      ['orders', 'helpers', 'mandi', 'payouts'].forEach(t => {
+        const el = document.getElementById('tab-' + t);
+        if (el) {
+          if (t === tab) {
+            el.className = 'flex flex-col items-center gap-1 text-emerald-400 active:scale-95 transition';
+          } else {
+            el.className = 'flex flex-col items-center gap-1 text-slate-400 active:scale-95 transition';
+          }
+        }
+      });
+      if (tab === 'helpers') {
+        alert('Helpers Fleet: 12 Active Helpers in Zone #04 (Aadhaar & Police Verified).');
+      } else if (tab === 'mandi') {
+        alert('Mandi Rates: Today synced at 4:30 AM (Mangoes: ₹280 procure / ₹350 sell).');
+      } else if (tab === 'payouts') {
+        alert('Daily Payout Ledger: ₹4,850 ready for 1-click batch settlement.');
+      }
+    }
+
+    function filterOrders(category) {
+      alert('Filtered view for: ' + category);
+    }
+
+    function refreshList() {
+      triggerNotificationChime();
     }
   </script>
 </body>
