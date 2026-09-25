@@ -1,0 +1,9 @@
+{
+  "name": "Chhotu Ops Admin",
+  "short_name": "Chhotu Admin",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#059669",
+  ""orientation": "portrait"
+}
